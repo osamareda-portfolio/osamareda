@@ -1,0 +1,1880 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>محمد — صانع محتوى | Video Editor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080810;
+    --bg2: #0d0d1a;
+    --purple: #7c3aed;
+    --purple-light: #a855f7;
+    --purple-glow: rgba(124, 58, 237, 0.3);
+    --glass: rgba(255,255,255,0.04);
+    --glass-border: rgba(255,255,255,0.08);
+    --text: #f0eeff;
+    --text-muted: #8b7fa8;
+    --accent: #c084fc;
+    --gold: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.7;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* ── GLOW ORBS ── */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(100px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .orb-1 { width: 600px; height: 600px; background: rgba(124,58,237,0.12); top: -200px; right: -200px; }
+  .orb-2 { width: 500px; height: 500px; background: rgba(168,85,247,0.08); bottom: 20%; left: -150px; }
+  .orb-3 { width: 400px; height: 400px; background: rgba(192,132,252,0.06); top: 50%; left: 40%; }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    padding: 18px 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(8,8,16,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--glass-border);
+    transition: all 0.3s;
+  }
+
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--purple-light), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 1px;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+    align-items: center;
+  }
+
+  .nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: color 0.3s;
+  }
+
+  .nav-links a:hover { color: var(--accent); }
+
+  .nav-cta {
+    background: linear-gradient(135deg, var(--purple), var(--purple-light));
+    color: white !important;
+    padding: 10px 22px;
+    border-radius: 50px;
+    font-size: 0.85rem !important;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding: 100px 5% 60px;
+    overflow: hidden;
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(124,58,237,0.15);
+    border: 1px solid rgba(124,58,237,0.3);
+    padding: 6px 16px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    color: var(--accent);
+    margin-bottom: 24px;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .hero-badge::before {
+    content: '';
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.3); }
+  }
+
+  .hero h1 {
+    font-size: clamp(2.2rem, 4vw, 3.2rem);
+    font-weight: 900;
+    line-height: 1.2;
+    margin-bottom: 20px;
+    animation: fadeDown 0.6s ease 0.1s both;
+  }
+
+  .hero h1 .highlight {
+    background: linear-gradient(135deg, var(--purple-light), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero-sub {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    margin-bottom: 36px;
+    max-width: 480px;
+    animation: fadeDown 0.6s ease 0.2s both;
+  }
+
+  .hero-btns {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    animation: fadeDown 0.6s ease 0.3s both;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--purple), var(--purple-light));
+    color: white;
+    padding: 14px 30px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s;
+    box-shadow: 0 0 30px rgba(124,58,237,0.35);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 50px rgba(124,58,237,0.55);
+  }
+
+  .btn-secondary {
+    background: var(--glass);
+    color: var(--text);
+    padding: 14px 30px;
+    border-radius: 50px;
+    border: 1px solid var(--glass-border);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s;
+    backdrop-filter: blur(10px);
+  }
+
+  .btn-secondary:hover {
+    background: rgba(124,58,237,0.1);
+    border-color: rgba(124,58,237,0.4);
+    transform: translateY(-2px);
+  }
+
+  .hero-visual {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    animation: fadeUp 0.8s ease 0.2s both;
+  }
+
+  .hero-avatar-wrap {
+    position: relative;
+    width: 320px;
+    height: 320px;
+  }
+
+  .hero-avatar-ring {
+    position: absolute;
+    inset: -20px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    background: linear-gradient(135deg, var(--purple), var(--accent), transparent) border-box;
+    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: destination-out;
+    animation: spin 8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .hero-avatar {
+    width: 320px;
+    height: 320px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(168,85,247,0.1));
+    border: 2px solid rgba(124,58,237,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-avatar::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 30% 30%, rgba(192,132,252,0.15), transparent 70%);
+  }
+
+  .floating-badge {
+    position: absolute;
+    background: rgba(13,13,26,0.9);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(10px);
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .floating-badge.left { bottom: 40px; left: -20px; animation-delay: 0.5s; }
+  .floating-badge.top { top: 20px; right: -30px; }
+
+  @keyframes float {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  /* ── STATS ── */
+  .stats {
+    padding: 60px 5%;
+    position: relative;
+    z-index: 1;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 40px;
+    backdrop-filter: blur(10px);
+  }
+
+  .stat-item {
+    text-align: center;
+    padding: 16px;
+    position: relative;
+  }
+
+  .stat-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 20%;
+    height: 60%;
+    width: 1px;
+    background: var(--glass-border);
+  }
+
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.8rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--purple-light), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .stat-label {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  /* ── SECTION BASE ── */
+  section { position: relative; z-index: 1; }
+
+  .section-wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 80px 5%;
+  }
+
+  .section-tag {
+    display: inline-block;
+    color: var(--accent);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    position: relative;
+    padding-right: 40px;
+  }
+
+  .section-tag::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    width: 30px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  .section-title {
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    font-weight: 900;
+    margin-bottom: 16px;
+    line-height: 1.2;
+  }
+
+  .section-sub {
+    color: var(--text-muted);
+    max-width: 540px;
+    font-size: 1rem;
+    margin-bottom: 48px;
+  }
+
+  /* ── VIDEO INTRO ── */
+  .video-intro-section {
+    background: linear-gradient(180deg, transparent, rgba(124,58,237,0.05), transparent);
+  }
+
+  .showreel-wrap {
+    position: relative;
+    border-radius: 24px;
+    overflow: hidden;
+    aspect-ratio: 16/9;
+    max-width: 900px;
+    margin: 0 auto;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    cursor: pointer;
+    group: true;
+  }
+
+  .showreel-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: linear-gradient(135deg, #1a0a2e, #0d0d1a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 5rem;
+  }
+
+  .play-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    background: rgba(124,58,237,0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    transition: all 0.3s;
+    box-shadow: 0 0 40px rgba(124,58,237,0.5);
+    backdrop-filter: blur(10px);
+  }
+
+  .showreel-wrap:hover .play-btn {
+    transform: translate(-50%, -50%) scale(1.1);
+    box-shadow: 0 0 60px rgba(124,58,237,0.8);
+  }
+
+  .showreel-label {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    background: rgba(8,8,16,0.8);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(10px);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  /* ── ABOUT ── */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 60px;
+    align-items: start;
+  }
+
+  .about-skills {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .skill-bar-item { }
+
+  .skill-bar-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .skill-bar-track {
+    height: 6px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .skill-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--purple), var(--accent));
+    transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .about-text p {
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    font-size: 1rem;
+  }
+
+  .about-text .big-quote {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text);
+    border-right: 3px solid var(--purple-light);
+    padding-right: 16px;
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+
+  .about-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 24px;
+  }
+
+  .tag {
+    background: rgba(124,58,237,0.1);
+    border: 1px solid rgba(124,58,237,0.25);
+    color: var(--accent);
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  /* ── EXPERIENCE ── */
+  .timeline {
+    position: relative;
+    padding-right: 30px;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, var(--purple), transparent);
+  }
+
+  .timeline-item {
+    position: relative;
+    padding-right: 30px;
+    margin-bottom: 40px;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    right: -6px;
+    top: 6px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--purple);
+    box-shadow: 0 0 15px rgba(124,58,237,0.6);
+    border: 2px solid var(--bg);
+  }
+
+  .timeline-date {
+    color: var(--accent);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+
+  .timeline-role {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .timeline-company {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 12px;
+  }
+
+  .timeline-desc {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.7;
+  }
+
+  .timeline-achievements {
+    list-style: none;
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .timeline-achievements li {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .timeline-achievements li::before {
+    content: '▸';
+    color: var(--purple-light);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* ── SERVICES ── */
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  .service-card {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 32px;
+    transition: all 0.35s;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+  }
+
+  .service-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--purple), transparent);
+    transform: scaleX(0);
+    transition: transform 0.4s;
+  }
+
+  .service-card:hover {
+    border-color: rgba(124,58,237,0.3);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 50px rgba(124,58,237,0.1);
+  }
+
+  .service-card:hover::before { transform: scaleX(1); }
+
+  .service-icon {
+    font-size: 2.2rem;
+    margin-bottom: 16px;
+  }
+
+  .service-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .service-desc {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    line-height: 1.7;
+    margin-bottom: 16px;
+  }
+
+  .service-result {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(124,58,237,0.08);
+    border: 1px solid rgba(124,58,237,0.15);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.82rem;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* ── PORTFOLIO ── */
+  .portfolio-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  .portfolio-card {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 18px;
+    overflow: hidden;
+    transition: all 0.35s;
+    cursor: pointer;
+    group: true;
+  }
+
+  .portfolio-card:hover {
+    border-color: rgba(124,58,237,0.4);
+    transform: translateY(-4px);
+    box-shadow: 0 24px 50px rgba(124,58,237,0.12);
+  }
+
+  .portfolio-thumb {
+    aspect-ratio: 16/9;
+    background: linear-gradient(135deg, #1a0a2e, #0d1a2e);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+  }
+
+  .portfolio-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(124,58,237,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .portfolio-card:hover .portfolio-overlay { opacity: 1; }
+
+  .play-circle {
+    width: 56px; height: 56px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    transform: scale(0.8);
+    transition: transform 0.3s;
+  }
+
+  .portfolio-card:hover .play-circle { transform: scale(1); }
+
+  .portfolio-info {
+    padding: 20px;
+  }
+
+  .portfolio-cat {
+    color: var(--accent);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .portfolio-name {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .portfolio-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 12px;
+    border-top: 1px solid var(--glass-border);
+    padding-top: 12px;
+  }
+
+  .meta-item { font-size: 0.78rem; }
+  .meta-label { color: var(--text-muted); display: block; margin-bottom: 2px; }
+  .meta-val { color: var(--text); font-weight: 600; }
+
+  /* ── TESTIMONIALS ── */
+  .testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  .testimonial-card {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 28px;
+    backdrop-filter: blur(10px);
+    position: relative;
+    transition: all 0.3s;
+  }
+
+  .testimonial-card:hover {
+    border-color: rgba(124,58,237,0.3);
+    transform: translateY(-3px);
+  }
+
+  .stars {
+    color: var(--gold);
+    font-size: 0.9rem;
+    margin-bottom: 14px;
+    letter-spacing: 2px;
+  }
+
+  .testimonial-text {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.75;
+    margin-bottom: 20px;
+    font-style: italic;
+  }
+
+  .testimonial-author {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .author-avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--purple), var(--accent));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  .author-name { font-size: 0.9rem; font-weight: 700; }
+  .author-role { font-size: 0.78rem; color: var(--text-muted); }
+
+  .quote-mark {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-size: 4rem;
+    color: rgba(124,58,237,0.15);
+    font-family: serif;
+    line-height: 1;
+  }
+
+  /* ── PRICING ── */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .pricing-card {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 36px 28px;
+    text-align: center;
+    transition: all 0.35s;
+    backdrop-filter: blur(10px);
+    position: relative;
+  }
+
+  .pricing-card.featured {
+    background: linear-gradient(135deg, rgba(124,58,237,0.15), rgba(168,85,247,0.08));
+    border-color: rgba(124,58,237,0.4);
+    transform: scale(1.05);
+  }
+
+  .pricing-card.featured::before {
+    content: '⭐ الأكثر طلبًا';
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--purple), var(--purple-light));
+    color: white;
+    padding: 4px 16px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .pricing-card:hover:not(.featured) {
+    border-color: rgba(124,58,237,0.3);
+    transform: translateY(-4px);
+  }
+
+  .plan-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  .plan-price {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+
+  .plan-from {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin-bottom: 20px;
+  }
+
+  .plan-features {
+    list-style: none;
+    margin-bottom: 28px;
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .plan-features li {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .plan-features li::before {
+    content: '✓';
+    color: var(--purple-light);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* ── CTA SECTION ── */
+  .cta-section {
+    background: linear-gradient(135deg, rgba(124,58,237,0.1), rgba(168,85,247,0.05));
+    border-top: 1px solid rgba(124,58,237,0.15);
+    border-bottom: 1px solid rgba(124,58,237,0.15);
+  }
+
+  .cta-inner {
+    max-width: 700px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 80px 5%;
+  }
+
+  .cta-inner h2 {
+    font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+    font-weight: 900;
+    margin-bottom: 16px;
+    line-height: 1.3;
+  }
+
+  .cta-inner p {
+    color: var(--text-muted);
+    margin-bottom: 36px;
+    font-size: 1rem;
+  }
+
+  .cta-btns {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-whatsapp {
+    background: linear-gradient(135deg, #25D366, #128C7E);
+    color: white;
+    padding: 14px 28px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s;
+    box-shadow: 0 0 25px rgba(37,211,102,0.3);
+  }
+
+  .btn-whatsapp:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 40px rgba(37,211,102,0.5);
+  }
+
+  /* ── CONTACT ── */
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 60px;
+  }
+
+  .contact-info { display: flex; flex-direction: column; gap: 20px; }
+
+  .contact-item {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.3s;
+    text-decoration: none;
+    color: var(--text);
+  }
+
+  .contact-item:hover {
+    border-color: rgba(124,58,237,0.4);
+    transform: translateX(-4px);
+  }
+
+  .contact-icon {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, var(--purple), var(--purple-light));
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+
+  .contact-label { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 2px; }
+  .contact-val { font-weight: 600; font-size: 0.95rem; }
+
+  .contact-form {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 36px;
+    backdrop-filter: blur(10px);
+  }
+
+  .form-group { margin-bottom: 20px; }
+
+  .form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-muted);
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    width: 100%;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.3s;
+    resize: vertical;
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus,
+  .form-group select:focus {
+    border-color: rgba(124,58,237,0.5);
+  }
+
+  .form-group select option { background: #0d0d1a; }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 40px 5%;
+    border-top: 1px solid var(--glass-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .footer-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--purple-light), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .footer-copy { color: var(--text-muted); font-size: 0.82rem; }
+
+  .social-links {
+    display: flex;
+    gap: 12px;
+  }
+
+  .social-link {
+    width: 40px; height: 40px;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: all 0.3s;
+    color: var(--text-muted);
+  }
+
+  .social-link:hover {
+    background: rgba(124,58,237,0.15);
+    border-color: rgba(124,58,237,0.4);
+    color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  /* ── WHATSAPP FLOAT ── */
+  .whatsapp-float {
+    position: fixed;
+    bottom: 28px;
+    left: 28px;
+    z-index: 999;
+    background: #25D366;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    text-decoration: none;
+    box-shadow: 0 4px 20px rgba(37,211,102,0.4);
+    animation: float 3s ease-in-out infinite;
+    transition: all 0.3s;
+  }
+
+  .whatsapp-float:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 30px rgba(37,211,102,0.6);
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 768px) {
+    .hero-grid,
+    .about-grid,
+    .contact-grid { grid-template-columns: 1fr; }
+
+    .hero-visual { order: -1; }
+    .hero-avatar-wrap { width: 220px; height: 220px; }
+    .hero-avatar { width: 220px; height: 220px; }
+
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+
+    .services-grid,
+    .portfolio-grid,
+    .testimonials-grid,
+    .pricing-grid { grid-template-columns: 1fr; }
+
+    .pricing-card.featured { transform: none; }
+
+    nav .nav-links { display: none; }
+
+    .section-wrap { padding: 60px 5%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- WHATSAPP FLOAT -->
+<a href="https://wa.me/966500000000" target="_blank" class="whatsapp-float" title="تواصل عبر واتساب">💬</a>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">M.CREATOR</div>
+  <ul class="nav-links">
+    <li><a href="#about">عني</a></li>
+    <li><a href="#services">الخدمات</a></li>
+    <li><a href="#portfolio">الأعمال</a></li>
+    <li><a href="#pricing">الأسعار</a></li>
+    <li><a href="#contact" class="nav-cta">🚀 ابدأ الآن</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid">
+    <div>
+      <div class="hero-badge">✨ متاح للمشاريع الجديدة</div>
+      <h1>
+        أحوّل <span class="highlight">أفكارك</span> إلى<br>
+        محتوى يبيع<br>
+        ويُشاهَد بالملايين
+      </h1>
+      <p class="hero-sub">
+        صانع محتوى متخصص في Short-Form Video، Ads، و Storytelling.
+        لا أصنع فيديوهات — أصنع نتائج قابلة للقياس.
+      </p>
+      <div class="hero-btns">
+        <a href="#contact" class="btn-primary">🚀 لنبني برندك معًا</a>
+        <a href="#portfolio" class="btn-secondary">▶ شاهد الأعمال</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-avatar-wrap">
+        <div class="hero-avatar-ring"></div>
+        <div class="hero-avatar">🎬</div>
+        <div class="floating-badge top">
+          <span>🔥</span>
+          <div>
+            <div style="font-weight:700;font-size:0.85rem">+5M مشاهدة</div>
+            <div style="color:var(--text-muted);font-size:0.75rem">آخر 6 أشهر</div>
+          </div>
+        </div>
+        <div class="floating-badge left">
+          <span>⭐</span>
+          <div>
+            <div style="font-weight:700;font-size:0.85rem">100% رضا العملاء</div>
+            <div style="color:var(--text-muted);font-size:0.75rem">30+ مشروع</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats reveal">
+  <div class="stats-grid">
+    <div class="stat-item">
+      <div class="stat-num">+200</div>
+      <div class="stat-label">فيديو محترف</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">+50</div>
+      <div class="stat-label">عميل راضٍ</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">+5M</div>
+      <div class="stat-label">إجمالي المشاهدات</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">3+</div>
+      <div class="stat-label">سنوات خبرة</div>
+    </div>
+  </div>
+</div>
+
+<!-- VIDEO INTRO / SHOWREEL -->
+<section class="video-intro-section">
+  <div class="section-wrap reveal">
+    <div style="text-align:center;margin-bottom:40px">
+      <span class="section-tag">Showreel 2024</span>
+      <h2 class="section-title">شاهد ما أقدر على تحقيقه</h2>
+      <p class="section-sub" style="margin:0 auto">كل فيديو في هذا الـ Showreel يمثل قصة نجاح حقيقية — من الفكرة حتى النتيجة.</p>
+    </div>
+    <div class="showreel-wrap" onclick="this.innerHTML='<iframe width=\'100%\' height=\'100%\' src=\'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1\' frameborder=\'0\' allowfullscreen style=\'border-radius:24px\'></iframe>'">
+      <div class="showreel-thumb" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:linear-gradient(135deg,#1a0a2e,#0a1a2e,#0d0d1a);aspect-ratio:16/9">
+        <div style="font-size:4rem;margin-bottom:12px">🎞️</div>
+        <div style="color:var(--text-muted);font-size:0.9rem">Showreel — أفضل أعمالي 2024</div>
+      </div>
+      <div class="play-btn">▶</div>
+      <div class="showreel-label">2:45 دقيقة</div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-wrap reveal">
+    <div class="about-grid">
+      <div>
+        <span class="section-tag">من أنا</span>
+        <h2 class="section-title">لا أصنع محتوى<br>أصنع <span style="background:linear-gradient(135deg,var(--purple-light),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent">نتائج</span></h2>
+        <div class="about-skills">
+          <div class="skill-bar-item">
+            <div class="skill-bar-header"><span>Short-Form Video</span><span style="color:var(--accent)">95%</span></div>
+            <div class="skill-bar-track"><div class="skill-bar-fill" style="width:95%"></div></div>
+          </div>
+          <div class="skill-bar-item">
+            <div class="skill-bar-header"><span>Video Ads</span><span style="color:var(--accent)">90%</span></div>
+            <div class="skill-bar-track"><div class="skill-bar-fill" style="width:90%"></div></div>
+          </div>
+          <div class="skill-bar-item">
+            <div class="skill-bar-header"><span>Storytelling</span><span style="color:var(--accent)">92%</span></div>
+            <div class="skill-bar-track"><div class="skill-bar-fill" style="width:92%"></div></div>
+          </div>
+          <div class="skill-bar-item">
+            <div class="skill-bar-header"><span>Motion Graphics</span><span style="color:var(--accent)">85%</span></div>
+            <div class="skill-bar-track"><div class="skill-bar-fill" style="width:85%"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="about-text">
+        <div class="big-quote">
+          "أنا لا أمنتج فيديوهات فقط —<br>أبني تجارب بصرية تحرّك المشاعر وتدفع للشراء."
+        </div>
+        <p>
+          مرحبًا، أنا محمد — صانع محتوى متخصص في تحويل الأفكار إلى محتوى بصري يأسر الانتباه في أول 3 ثوانٍ ويحافظ على المشاهد حتى النهاية.
+        </p>
+        <p>
+          تخصصي في Short-Form Content للمنصات مثل TikTok وInstagram وYouTube Shorts، إضافةً إلى إنتاج إعلانات مدفوعة مُحسَّنة للتحويل، وبناء هوية بصرية قوية للعلامات التجارية.
+        </p>
+        <p>
+          عملت مع أكثر من <strong style="color:var(--text)">50 عميل</strong> في مجالات التجارة الإلكترونية، العقارات، التعليم، والطعام والمطاعم. كل مشروع أتعامل معه كأنه مشروعي الخاص.
+        </p>
+        <div class="about-tags">
+          <span class="tag">TikTok</span>
+          <span class="tag">Instagram Reels</span>
+          <span class="tag">YouTube Shorts</span>
+          <span class="tag">Video Ads</span>
+          <span class="tag">After Effects</span>
+          <span class="tag">Premiere Pro</span>
+          <span class="tag">Motion Graphics</span>
+          <span class="tag">Storytelling</span>
+        </div>
+        <div style="margin-top:28px;display:flex;gap:14px;flex-wrap:wrap">
+          <a href="#contact" class="btn-primary">🤝 تحدث معي</a>
+          <a href="#" class="btn-secondary" download>📄 تحميل CV</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section id="experience" style="background:linear-gradient(180deg,transparent,rgba(124,58,237,0.03),transparent)">
+  <div class="section-wrap reveal">
+    <span class="section-tag">المسيرة</span>
+    <h2 class="section-title">خبرات تراكمية<br>نتائج موثّقة</h2>
+    <p class="section-sub">كل تجربة أضافت لي مهارة جديدة وفهمًا أعمق لما يصنع المحتوى الناجح.</p>
+    <div style="max-width:700px">
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-date">2022 — الآن</div>
+          <div class="timeline-role">Freelance Content Creator & Video Editor</div>
+          <div class="timeline-company">مستقل — عملاء من السعودية، الإمارات، مصر، الكويت</div>
+          <ul class="timeline-achievements">
+            <li>أنتجت أكثر من 200 فيديو احترافي لعلامات تجارية متنوعة</li>
+            <li>حققت لعميل في قطاع الطعام زيادة 300% في تفاعل TikTok خلال شهرين</li>
+            <li>إعلان لعميل عقاري وصل لأكثر من 1.2M مشاهدة عضوية</li>
+            <li>بنيت هوية بصرية من الصفر لـ 12 علامة تجارية ناشئة</li>
+          </ul>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-date">2021 — 2022</div>
+          <div class="timeline-role">Video Editor — إنتاج إعلاني</div>
+          <div class="timeline-company">استوديو إنتاج محلي</div>
+          <ul class="timeline-achievements">
+            <li>أشرفت على مونتاج +50 إعلان تلفزيوني وسوشيال ميديا</li>
+            <li>تعلمت التعامل مع مواد خام احترافية وكاميرات السينما</li>
+            <li>طورت مهارات التعاون مع مديري الإبداع والمصورين</li>
+          </ul>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-date">2020 — 2021</div>
+          <div class="timeline-role">محتوى رياضي — TikTok Creator</div>
+          <div class="timeline-company">قناة شخصية — نمو عضوي</div>
+          <ul class="timeline-achievements">
+            <li>وصلت لـ 100K متابع في أقل من 8 أشهر</li>
+            <li>اكتشفت معادلة الـ Hook-Value-CTA التي أطبقها اليوم مع عملائي</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="section-wrap reveal">
+    <span class="section-tag">الخدمات</span>
+    <h2 class="section-title">ماذا أقدم لك؟</h2>
+    <p class="section-sub">كل خدمة مصممة لهدف واحد: تحقيق نتيجة حقيقية وقابلة للقياس لعلامتك التجارية.</p>
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="service-icon">⚡</div>
+        <div class="service-title">Short-Form Content</div>
+        <div class="service-desc">
+          فيديوهات قصيرة مُحسَّنة للـ TikTok، Reels، وYouTube Shorts — مصممة لأول 3 ثوانٍ تأسر الانتباه وتُكمل المشاهدة.
+        </div>
+        <div class="service-result">📈 النتيجة: زيادة التفاعل والمتابعين</div>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">🎯</div>
+        <div class="service-title">إعلانات مدفوعة (Ads)</div>
+        <div class="service-desc">
+          أصنع إعلانات مُحسَّنة للتحويل — مع Hook قوي، Offer واضح، وCTA يدفع للشراء. مناسبة لـ Meta وTikTok Ads.
+        </div>
+        <div class="service-result">💰 النتيجة: زيادة المبيعات وتخفيض CPA</div>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">📖</div>
+        <div class="service-title">Storytelling للبراندات</div>
+        <div class="service-desc">
+          أحوّل قصة علامتك التجارية إلى محتوى بصري يخلق ارتباطًا عاطفيًا مع جمهورك ويجعلك لا يُنسى.
+        </div>
+        <div class="service-result">❤️ النتيجة: ولاء العملاء وقوة البراند</div>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">✂️</div>
+        <div class="service-title">مونتاج احترافي</div>
+        <div class="service-desc">
+          مونتاج بمستوى احترافي باستخدام Premiere Pro وAfter Effects، مع موشن جرافيك، مؤثرات صوتية، وترجمة.
+        </div>
+        <div class="service-result">🎬 النتيجة: محتوى جاهز للنشر 100%</div>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">🚀</div>
+        <div class="service-title">باقة النمو الشهري</div>
+        <div class="service-desc">
+          نظام محتوى كامل شهريًا: تخطيط، سكريبت، تصوير (إن أمكن)، مونتاج، نشر — كل شيء في مكان واحد.
+        </div>
+        <div class="service-result">📊 النتيجة: نمو مستدام وحضور رقمي قوي</div>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">🎓</div>
+        <div class="service-title">استشارة إبداعية</div>
+        <div class="service-desc">
+          جلسة تحليل لحسابك ومحتواك الحالي، مع خطة محتوى واضحة وأفكار قابلة للتنفيذ فورًا.
+        </div>
+        <div class="service-result">🧭 النتيجة: وضوح الرؤية وتوفير الوقت</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PORTFOLIO -->
+<section id="portfolio" style="background:linear-gradient(180deg,transparent,rgba(124,58,237,0.03),transparent)">
+  <div class="section-wrap reveal">
+    <span class="section-tag">الأعمال</span>
+    <h2 class="section-title">أعمال تتكلم<br>عن نفسها</h2>
+    <p class="section-sub">كل مشروع تحته قصة: تحدٍ واجهناه، حل ابتكرناه، ونتيجة حققناها.</p>
+    <div class="portfolio-grid">
+
+      <div class="portfolio-card">
+        <div class="portfolio-thumb" style="background:linear-gradient(135deg,#1a0a2e,#2d1b69)">
+          🍔
+          <div class="portfolio-overlay"><div class="play-circle">▶</div></div>
+        </div>
+        <div class="portfolio-info">
+          <div class="portfolio-cat">Short-Form / Food</div>
+          <div class="portfolio-name">إعادة إطلاق مطعم سعودي</div>
+          <div style="color:var(--text-muted);font-size:0.82rem;line-height:1.6">
+            <strong style="color:var(--text)">التحدي:</strong> حساب راكد منذ 6 أشهر.<br>
+            <strong style="color:var(--text)">الحل:</strong> سلسلة Reels بـ Hook مشوّق + نكهة محلية.<br>
+            <strong style="color:var(--text)">النتيجة:</strong> 800K مشاهدة في أسبوع واحد.
+          </div>
+          <div class="portfolio-meta">
+            <div class="meta-item"><span class="meta-label">المشاهدات</span><span class="meta-val">800K+</span></div>
+            <div class="meta-item"><span class="meta-label">المنصة</span><span class="meta-val">TikTok</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="portfolio-card">
+        <div class="portfolio-thumb" style="background:linear-gradient(135deg,#0a1a2e,#1a2e4a)">
+          🏠
+          <div class="portfolio-overlay"><div class="play-circle">▶</div></div>
+        </div>
+        <div class="portfolio-info">
+          <div class="portfolio-cat">Video Ad / Real Estate</div>
+          <div class="portfolio-name">إعلان عقاري يصل لجمهوره</div>
+          <div style="color:var(--text-muted);font-size:0.82rem;line-height:1.6">
+            <strong style="color:var(--text)">التحدي:</strong> إعلانات سابقة بتكلفة عالية وعوائد منخفضة.<br>
+            <strong style="color:var(--text)">الحل:</strong> Storytelling عاطفي يخاطب المشتري الناجح.<br>
+            <strong style="color:var(--text)">النتيجة:</strong> تخفيض CPA بنسبة 60%.
+          </div>
+          <div class="portfolio-meta">
+            <div class="meta-item"><span class="meta-label">تخفيض CPA</span><span class="meta-val">60%</span></div>
+            <div class="meta-item"><span class="meta-label">المنصة</span><span class="meta-val">Meta Ads</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="portfolio-card">
+        <div class="portfolio-thumb" style="background:linear-gradient(135deg,#1a2e0a,#2e4a1a)">
+          🎓
+          <div class="portfolio-overlay"><div class="play-circle">▶</div></div>
+        </div>
+        <div class="portfolio-info">
+          <div class="portfolio-cat">Brand Story / Education</div>
+          <div class="portfolio-name">قصة نجاح منصة تعليمية</div>
+          <div style="color:var(--text-muted);font-size:0.82rem;line-height:1.6">
+            <strong style="color:var(--text)">التحدي:</strong> بناء ثقة في منصة جديدة بسوق مشبع.<br>
+            <strong style="color:var(--text)">الحل:</strong> فيديو توثيقي يجمع قصص طلاب حقيقيين.<br>
+            <strong style="color:var(--text)">النتيجة:</strong> 1.2M مشاهدة وزيادة 200% في التسجيل.
+          </div>
+          <div class="portfolio-meta">
+            <div class="meta-item"><span class="meta-label">المشاهدات</span><span class="meta-val">1.2M</span></div>
+            <div class="meta-item"><span class="meta-label">نمو التسجيل</span><span class="meta-val">+200%</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="portfolio-card">
+        <div class="portfolio-thumb" style="background:linear-gradient(135deg,#2e0a2e,#4a1a4a)">
+          👗
+          <div class="portfolio-overlay"><div class="play-circle">▶</div></div>
+        </div>
+        <div class="portfolio-info">
+          <div class="portfolio-cat">Product Video / Fashion</div>
+          <div class="portfolio-name">إطلاق خط أزياء نسائي</div>
+          <div style="color:var(--text-muted);font-size:0.82rem;line-height:1.6">
+            <strong style="color:var(--text)">التحدي:</strong> إطلاق المنتج بميزانية تسويقية محدودة.<br>
+            <strong style="color:var(--text)">الحل:</strong> سلسلة Reels + UGC-style content.<br>
+            <strong style="color:var(--text)">النتيجة:</strong> نفاد المخزون في 48 ساعة.
+          </div>
+          <div class="portfolio-meta">
+            <div class="meta-item"><span class="meta-label">النتيجة</span><span class="meta-val">Sold Out</span></div>
+            <div class="meta-item"><span class="meta-label">المدة</span><span class="meta-val">48 ساعة</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="portfolio-card">
+        <div class="portfolio-thumb" style="background:linear-gradient(135deg,#2e1a0a,#4a2e1a)">
+          💪
+          <div class="portfolio-overlay"><div class="play-circle">▶</div></div>
+        </div>
+        <div class="portfolio-info">
+          <div class="portfolio-cat">Motivation / Fitness</div>
+          <div class="portfolio-name">محتوى كوتش لياقة بدنية</div>
+          <div style="color:var(--text-muted);font-size:0.82rem;line-height:1.6">
+            <strong style="color:var(--text)">التحدي:</strong> كوتش بـ 2K متابع يريد التوسع.<br>
+            <strong style="color:var(--text)">الحل:</strong> استراتيجية محتوى + مونتاج يحرّك المشاعر.<br>
+            <strong style="color:var(--text)">النتيجة:</strong> 50K متابع في 3 أشهر.
+          </div>
+          <div class="portfolio-meta">
+            <div class="meta-item"><span class="meta-label">نمو المتابعين</span><span class="meta-val">2K→50K</span></div>
+            <div class="meta-item"><span class="meta-label">المدة</span><span class="meta-val">3 أشهر</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="portfolio-card">
+        <div class="portfolio-thumb" style="background:linear-gradient(135deg,#0a2e2e,#1a4a4a)">
+          ☕
+          <div class="portfolio-overlay"><div class="play-circle">▶</div></div>
+        </div>
+        <div class="portfolio-info">
+          <div class="portfolio-cat">Brand Identity / Café</div>
+          <div class="portfolio-name">هوية بصرية لكافيه ناشئ</div>
+          <div style="color:var(--text-muted);font-size:0.82rem;line-height:1.6">
+            <strong style="color:var(--text)">التحدي:</strong> كافيه بدون هوية بصرية واضحة.<br>
+            <strong style="color:var(--text)">الحل:</strong> محتوى Cinematic + Aesthetic Reels.<br>
+            <strong style="color:var(--text)">النتيجة:</strong> 500% زيادة في الإقبال من السوشيال.
+          </div>
+          <div class="portfolio-meta">
+            <div class="meta-item"><span class="meta-label">نمو الإقبال</span><span class="meta-val">+500%</span></div>
+            <div class="meta-item"><span class="meta-label">المنصة</span><span class="meta-val">Instagram</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div style="text-align:center;margin-top:36px">
+      <a href="#contact" class="btn-primary">🎬 ناقش مشروعك معي</a>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials">
+  <div class="section-wrap reveal">
+    <span class="section-tag">آراء العملاء</span>
+    <h2 class="section-title">ما يقوله عملائي</h2>
+    <p class="section-sub">كلامهم هو أفضل portfolio — لأن النتائج تتكلم أكثر من أي عرض تقديمي.</p>
+    <div class="testimonials-grid">
+
+      <div class="testimonial-card">
+        <div class="quote-mark">"</div>
+        <div class="stars">★★★★★</div>
+        <div class="testimonial-text">
+          محمد مش مجرد محرر فيديو — هو شريك إبداعي حقيقي. فهم برندنا من أول جلسة وقدّم محتوى تجاوز كل توقعاتنا. الفيديو الأول نشرناه وصل لـ 800K في أسبوع.
+        </div>
+        <div class="testimonial-author">
+          <div class="author-avatar">أ</div>
+          <div>
+            <div class="author-name">أحمد السبيعي</div>
+            <div class="author-role">صاحب مطعم — الرياض</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card">
+        <div class="quote-mark">"</div>
+        <div class="stars">★★★★★</div>
+        <div class="testimonial-text">
+          كنا نصرف على الإعلانات بدون نتائج واضحة. بعد تعاملنا مع محمد، انخفضت تكلفة الاستفسار بنسبة 60% وارتفعت المبيعات. الفرق في طريقة التفكير في الـ Hook.
+        </div>
+        <div class="testimonial-author">
+          <div class="author-avatar">س</div>
+          <div>
+            <div class="author-name">سلطان القحطاني</div>
+            <div class="author-role">مدير تسويق — شركة عقارية</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card">
+        <div class="quote-mark">"</div>
+        <div class="stars">★★★★★</div>
+        <div class="testimonial-text">
+          في 3 أشهر انتقلت من 2000 متابع لـ 50,000. محمد لا يفهم فقط المونتاج — يفهم ما الذي يجعل الناس تكمل المشاهدة وتشارك المحتوى. ده فرق حقيقي.
+        </div>
+        <div class="testimonial-author">
+          <div class="author-avatar">ر</div>
+          <div>
+            <div class="author-name">رنا العبدالله</div>
+            <div class="author-role">كوتش لياقة — أبوظبي</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" style="background:linear-gradient(180deg,transparent,rgba(124,58,237,0.04),transparent)">
+  <div class="section-wrap reveal">
+    <div style="text-align:center;margin-bottom:48px">
+      <span class="section-tag">الأسعار</span>
+      <h2 class="section-title">استثمار واضح<br>نتائج مقيّسة</h2>
+      <p class="section-sub" style="margin:0 auto">باقات مرنة تناسب احتياجاتك — من المشروع الواحد حتى الشراكة الشهرية الكاملة.</p>
+    </div>
+    <div class="pricing-grid">
+
+      <div class="pricing-card">
+        <div class="plan-name">Starter</div>
+        <div class="plan-price">يبدأ من<br><span style="font-size:1.6rem">500 ر.س</span></div>
+        <div class="plan-from">لكل فيديو</div>
+        <ul class="plan-features">
+          <li>فيديو واحد احترافي</li>
+          <li>مونتاج + موشن بسيط</li>
+          <li>موسيقى مرخصة</li>
+          <li>تسليم خلال 3-5 أيام</li>
+          <li>مراجعة واحدة</li>
+        </ul>
+        <a href="#contact" class="btn-secondary" style="width:100%;justify-content:center">ابدأ الآن</a>
+      </div>
+
+      <div class="pricing-card featured">
+        <div class="plan-name">Growth</div>
+        <div class="plan-price">يبدأ من<br><span style="font-size:1.6rem">1,800 ر.س</span></div>
+        <div class="plan-from">شهريًا / 6 فيديوهات</div>
+        <ul class="plan-features">
+          <li>6 فيديوهات شهريًا</li>
+          <li>موشن جرافيك احترافي</li>
+          <li>سكريبت + Hook مخصص</li>
+          <li>تحليل الأداء شهريًا</li>
+          <li>مراجعتان لكل فيديو</li>
+          <li>أولوية في التسليم</li>
+        </ul>
+        <a href="#contact" class="btn-primary" style="width:100%;justify-content:center">الأكثر قيمة 🔥</a>
+      </div>
+
+      <div class="pricing-card">
+        <div class="plan-name">Premium</div>
+        <div class="plan-price">يبدأ من<br><span style="font-size:1.6rem">3,500 ر.س</span></div>
+        <div class="plan-from">شهريًا / باقة كاملة</div>
+        <ul class="plan-features">
+          <li>12 فيديو + إعلانات</li>
+          <li>استراتيجية محتوى كاملة</li>
+          <li>تصميم مقاطع مخصصة</li>
+          <li>متابعة أداء الحملات</li>
+          <li>مراجعات غير محدودة</li>
+          <li>استشارة أسبوعية</li>
+        </ul>
+        <a href="#contact" class="btn-secondary" style="width:100%;justify-content:center">تحدث معي</a>
+      </div>
+
+    </div>
+    <p style="text-align:center;color:var(--text-muted);margin-top:24px;font-size:0.85rem">
+      * الأسعار تقريبية وتختلف حسب طبيعة المشروع والمتطلبات. تواصل معي للحصول على عرض سعر مخصص.
+    </p>
+  </div>
+</section>
+
+<!-- CTA BANNER -->
+<section class="cta-section">
+  <div class="cta-inner reveal">
+    <h2>جاهز تنمي برندك؟<br><span style="background:linear-gradient(135deg,var(--purple-light),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent">لنبدأ معًا اليوم</span></h2>
+    <p>لا تدع منافسيك يسبقونك. كل يوم تأخر هو فرصة خسرتها. تواصل معي الآن ونبني خطة محتوى تحقق نتائج حقيقية.</p>
+    <div class="cta-btns">
+      <a href="https://wa.me/966500000000" target="_blank" class="btn-whatsapp">💬 واتساب — رد فوري</a>
+      <a href="#contact" class="btn-primary">📧 راسلني الآن</a>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="section-wrap reveal">
+    <span class="section-tag">تواصل</span>
+    <h2 class="section-title">لنبدأ مشروعك</h2>
+    <p class="section-sub">أرد على جميع الرسائل خلال 24 ساعة. مشروعك يستحق الاهتمام الكامل.</p>
+    <div class="contact-grid">
+      <div class="contact-info">
+        <a href="https://wa.me/966500000000" target="_blank" class="contact-item">
+          <div class="contact-icon">💬</div>
+          <div>
+            <div class="contact-label">واتساب — أسرع طريقة</div>
+            <div class="contact-val">+966 50 000 0000</div>
+          </div>
+        </a>
+        <a href="mailto:hello@example.com" class="contact-item">
+          <div class="contact-icon">📧</div>
+          <div>
+            <div class="contact-label">البريد الإلكتروني</div>
+            <div class="contact-val">hello@yourname.com</div>
+          </div>
+        </a>
+        <a href="https://instagram.com" target="_blank" class="contact-item">
+          <div class="contact-icon">📱</div>
+          <div>
+            <div class="contact-label">إنستغرام</div>
+            <div class="contact-val">@yourhandle</div>
+          </div>
+        </a>
+        <a href="#" download class="contact-item">
+          <div class="contact-icon">📄</div>
+          <div>
+            <div class="contact-label">السيرة الذاتية</div>
+            <div class="contact-val">تحميل CV — PDF</div>
+          </div>
+        </a>
+        <div style="background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.2);border-radius:16px;padding:20px 24px;">
+          <div style="color:var(--accent);font-weight:700;margin-bottom:8px;font-size:0.9rem">⚡ أوقات التواصل</div>
+          <div style="color:var(--text-muted);font-size:0.85rem;line-height:1.8">
+            السبت — الخميس<br>
+            9 صباحًا — 10 مساءً (بتوقيت الرياض)
+          </div>
+        </div>
+      </div>
+
+      <div class="contact-form">
+        <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:24px">أرسل تفاصيل مشروعك</h3>
+        <div class="form-group">
+          <label>الاسم</label>
+          <input type="text" placeholder="ما اسمك؟">
+        </div>
+        <div class="form-group">
+          <label>رقم الواتساب أو الإيميل</label>
+          <input type="text" placeholder="+966 5X XXX XXXX">
+        </div>
+        <div class="form-group">
+          <label>نوع الخدمة</label>
+          <select>
+            <option value="">اختر الخدمة...</option>
+            <option>Short-Form Content</option>
+            <option>إعلانات مدفوعة</option>
+            <option>باقة النمو الشهري</option>
+            <option>Storytelling للبراندات</option>
+            <option>مونتاج فيديو</option>
+            <option>استشارة إبداعية</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>تفاصيل المشروع</label>
+          <textarea rows="4" placeholder="أخبرني عن برندك، هدفك، والنتيجة التي تريد تحقيقها..."></textarea>
+        </div>
+        <button onclick="alert('شكرًا! سيتم التواصل معك قريبًا.')" class="btn-primary" style="width:100%;justify-content:center;border:none;cursor:pointer;font-family:inherit">
+          🚀 أرسل الطلب
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">M.CREATOR</div>
+  <div class="footer-copy">© 2024 — محمد، صانع محتوى. جميع الحقوق محفوظة.</div>
+  <div class="social-links">
+    <a href="#" class="social-link" title="TikTok">🎵</a>
+    <a href="#" class="social-link" title="Instagram">📷</a>
+    <a href="#" class="social-link" title="YouTube">▶</a>
+    <a href="https://wa.me/966500000000" class="social-link" title="WhatsApp">💬</a>
+  </div>
+</footer>
+
+<script>
+  // ── SCROLL REVEAL ──
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(r => observer.observe(r));
+
+  // ── NAV SCROLL ──
+  window.addEventListener('scroll', () => {
+    const nav = document.querySelector('nav');
+    if (window.scrollY > 50) {
+      nav.style.background = 'rgba(8,8,16,0.97)';
+    } else {
+      nav.style.background = 'rgba(8,8,16,0.85)';
+    }
+  });
+
+  // ── COUNTER ANIMATION ──
+  function animateCounters() {
+    document.querySelectorAll('.stat-num').forEach(el => {
+      const text = el.textContent;
+      const num = parseInt(text.replace(/\D/g, ''));
+      const prefix = text.match(/[+]/)?.[0] || '';
+      const suffix = text.match(/[MKمش]+$/)?.[0] || '';
+      let current = 0;
+      const step = num / 60;
+      const timer = setInterval(() => {
+        current = Math.min(current + step, num);
+        el.textContent = prefix + Math.floor(current) + suffix;
+        if (current >= num) clearInterval(timer);
+      }, 25);
+    });
+  }
+
+  const statsObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        animateCounters();
+        statsObserver.disconnect();
+      }
+    });
+  }, { threshold: 0.5 });
+  statsObserver.observe(document.querySelector('.stats-grid'));
+
+  // ── SMOOTH SCROLL FOR NAV ──
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+</script>
+</body>
+</html>
